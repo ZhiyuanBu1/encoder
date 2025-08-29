@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encoder/Decoder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 10px;
+            border: none;
+            background: #e5e5e5;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .tab-button.active {
+            background: #0066cc;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 10px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .button:hover {
+            background: #0052a3;
+        }
+        
+        .error {
+            color: #dc2626;
+            margin-top: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .output-container {
+            margin-top: 20px;
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .output-text {
+            font-family: monospace;
+            word-break: break-all;
+            padding-right: 60px;
+        }
+        
+        .copy-button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #encoding-type {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="decode">Decode</button>
+            <button class="tab-button" data-tab="encode">Encode</button>
+        </div>
+        
+        <div id="decode-tab" class="tab-content active">
+            <div class="input-group">
+                <label>Enter encoded text:</label>
+                <input type="text" id="decode-input" placeholder="Enter your encoded text here">
+            </div>
+            <button class="button" onclick="detectAndDecode()">Decode</button>
+            <div id="decode-error" class="error"></div>
+            <div id="decode-output" class="output-container" style="display: none;">
+                <div id="encoding-type"></div>
+                <div class="output-text" id="decode-result"></div>
+                <button class="copy-button" onclick="copyText('decode-result')">Copy</button>
+            </div>
+        </div>
+        
+        <div id="encode-tab" class="tab-content">
+            <div class="input-group">
+                <label>Enter text to encode:</label>
+                <input type="text" id="encode-input" placeholder="Enter your text here">
+            </div>
+            <div class="input-group">
+                <label>Select encoding type:</label>
+                <select id="encoding-select">
+                    <option value="base64">Base64</option>
+                    <option value="url">URL Encoding</option>
+                    <option value="html">HTML Entities</option>
+                    <option value="hex">Hexadecimal</option>
+                    <option value="binary">Binary</option>
+                    <option value="morse">Morse Code</option>
+                    <option value="rot13">ROT13</option>
+                    <option value="ascii">ASCII</option>
+                </select>
+            </div>
+            <button class="button" onclick="encode()">Encode</button>
+            <div id="encode-error" class="error"></div>
+            <div id="encode-output" class="output-container" style="display: none;">
+                <div class="output-text" id="encode-result"></div>
+                <button class="copy-button" onclick="copyText('encode-result')">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const morseToChar = {
+            '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F',
+            '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
+            '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P', '--.-': 'Q', '.-.': 'R',
+            '...': 'S', '-': 'T', '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
+            '-.--': 'Y', '--..': 'Z', '-----': '0', '.----': '1', '..---': '2',
+            '...--': '3', '....-': '4', '.....': '5', '-....': '6', '--...': '7',
+            '---..': '8', '----.': '9', '/': ' '
+        };
+
+        const charToMorse = Object.fromEntries(
+            Object.entries(morseToChar).map(([morse, char]) => [char, morse])
+        );
+
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                button.classList.add('active');
+                document.getElementById(`${button.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+
+        // Fixed copy function
+        function copyText(elementId) {
+            const textToCopy = document.getElementById(elementId).textContent;
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => button.textContent = originalText, 2000);
+            } catch (err) {
+                console.error('Failed to copy text:', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showError(tabId, message) {
+            const errorDiv = document.getElementById(`${tabId}-error`);
+            errorDiv.textContent = message;
+            setTimeout(() => errorDiv.textContent = '', 3000);
+        }
+
+        function showOutput(tabId, result, encodingType = '') {
+            const outputContainer = document.getElementById(`${tabId}-output`);
+            const resultElement = document.getElementById(`${tabId}-result`);
+            
+            resultElement.textContent = result;
+            outputContainer.style.display = 'block';
+            
+            if (encodingType && tabId === 'decode') {
+                document.getElementById('encoding-type').textContent = `Detected Encoding: ${encodingType}`;
+            }
+        }
+
+        function encode() {
+            const input = document.getElementById('encode-input').value;
+            const encoding = document.getElementById('encoding-select').value;
+            
+            if (!input.trim()) {
+                showError('encode', 'Please enter some text to encode');
+                return;
+            }
+
+            try {
+                let result;
+                switch (encoding) {
+                    case 'base64':
+                        result = btoa(input);
+                        break;
+                    case 'url':
+                        result = encodeURIComponent(input);
+                        break;
+                    case 'html':
+                        result = input.replace(/[<>&"']/g, match => ({
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '&': '&amp;',
+                            '"': '&quot;',
+                            "'": '&#39;'
+                        })[match]);
+                        break;
+                    case 'hex':
+                        result = Array.from(input)
+                            .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+                            .join(' ');
+                        break;
+                    case 'binary':
+                        result = Array.from(input)
+                            .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
+                            .join(' ');
+                        break;
+                    case 'morse':
+                        result = input.toUpperCase().split('')
+                            .map(char => charToMorse[char] || char)
+                            .join(' ');
+                        break;
+                    case 'rot13':
+                        result = input.replace(/[a-zA-Z]/g, char => {
+                            const base = char <= 'Z' ? 65 : 97;
+                            return String.fromCharCode((char.charCodeAt(0) - base + 13) % 26 + base);
+                        });
+                        break;
+                    case 'ascii':
+                        result = Array.from(input)
+                            .map(char => char.charCodeAt(0))
+                            .join(' ');
+                        break;
+                }
+                showOutput('encode', result);
+            } catch (error) {
+                showError('encode', 'Error encoding text');
+            }
+        }
+
+        function decodeMorse(morseText) {
+            return morseText
+                .trim()
+                .split('/')
+                .map(word => 
+                    word.trim()
+                        .split(' ')
+                        .map(code => morseToChar[code] || '')
+                        .join('')
+                )
+                .join(' ')
+                .trim();
+        }
+
+        function detectAndDecode() {
+            const input = document.getElementById('decode-input').value;
+            
+            if (!input.trim()) {
+                showError('decode', 'Please enter some text to decode');
+                return;
+            }
+
+            try {
+                let result, encodingType;
+
+                // Morse code detection
+                if (/^[.-\s/]+$/.test(input)) {
+                    result = decodeMorse(input);
+                    if (result && result !== input) {
+                        encodingType = 'Morse Code';
+                    }
+                }
+
+                // Base64 detection
+                if (!result && /^[A-Za-z0-9+/]*={0,2}$/.test(input)) {
+                    try {
+                        result = atob(input);
+                        encodingType = 'Base64';
+                    } catch (e) {}
+                }
+
+                // URL encoding detection
+                if (!result && input.includes('%')) {
+                    try {
+                        const decoded = decodeURIComponent(input);
+                        if (decoded !== input) {
+                            result = decoded;
+                            encodingType = 'URL Encoding';
+                        }
+                    } catch (e) {}
+                }
+
+                // HTML entities detection
+                if (!result && input.includes('&') && input.includes(';')) {
+                    const div = document.createElement('div');
+                    div.innerHTML = input;
+                    const decoded = div.textContent;
+                    if (decoded !== input) {
+                        result = decoded;
+                        encodingType = 'HTML Entities';
+                    }
+                }
+
+                // Hex detection
+                if (!result && /^[0-9A-Fa-f\s]+$/.test(input)) {
+                    try {
+                        result = input.replace(/\s+/g, '')
+                            .match(/.{1,2}/g)
+                            ?.map(byte => String.fromCharCode(parseInt(byte, 16)))
+                            .join('');
+                        if (result) encodingType = 'Hexadecimal';
+                    } catch (e) {}
+                }
+
+                // Binary detection
+                if (!result && /^[01\s]+$/.test(input)) {
+                    try {
+                        result = input.split(' ')
+                            .map(bin => String.fromCharCode(parseInt(bin, 2)))
+                            .join('');
+                        encodingType = 'Binary';
+                    } catch (e) {}
+                }
+
+                // ASCII detection
+                if (!result && /^\d+(\s+\d+)*$/.test(input)) {
+                    try {
+                        result = input.split(' ')
+                            .map(num => String.fromCharCode(parseInt(num, 10)))
+                            .join('');
+                        encodingType = 'ASCII';
+                    } catch (e) {}
+                }
+
+                // ROT13 detection
+                if (!result) {
+                    result = input.replace(/[a-zA-Z]/g, char => {
+                        const base = char <= 'Z' ? 65 : 97;
+                        return String.fromCharCode((char.charCodeAt(0) - base + 13) % 26 + base);
+                    });
+                    if (result !== input) {
+                        encodingType = 'ROT13';
+                    }
+                }
+
+                if (result) {
+                    showOutput('decode', result, encodingType);
+                } else {
+                    showError('decode', 'Unable to detect encoding type');
+                }
+            } catch (error) {
+                showError('decode', 'Error decoding text');
+            }
+        }
+    </script>
+</body>
+</html>
