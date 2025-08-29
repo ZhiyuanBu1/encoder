@@ -3,183 +3,799 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encoder/Decoder</title>
+    <title>Enhanced Encoder/Decoder Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --accent: #60a5fa;
+            --accent-hover: #3b82f6;
+            --success: #34d399;
+            --error: #f87171;
+            --warning: #fbbf24;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            min-height: 100vh;
         }
-        
-        .card {
-            background: white;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 600px;
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
-        
-        .tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
         }
-        
-        .tab-button {
-            padding: 10px;
-            border: none;
-            background: #e5e5e5;
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
-            border-radius: 4px;
-            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
         }
-        
-        .tab-button.active {
-            background: #0066cc;
+
+        .theme-toggle:hover {
+            background: var(--accent);
             color: white;
         }
-        
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+
+        .tool-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 30px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .tab-button.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+
         .tab-content {
             display: none;
+            animation: fadeIn 0.3s ease;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-label {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .textarea-large {
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .button-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .button-secondary:hover {
+            background: var(--border);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 20px;
         }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
+
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .error, .success, .warning {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 14px;
             font-weight: 500;
         }
-        
-        input, select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
-        
-        .button {
-            width: 100%;
-            padding: 10px;
-            background: #0066cc;
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .output-container {
+            margin-top: 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            position: relative;
+            display: none;
+        }
+
+        .output-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .output-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .output-text {
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .copy-button {
+            padding: 6px 12px;
+            background: var(--accent);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: var(--accent-hover);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-title {
             font-size: 16px;
-        }
-        
-        .button:hover {
-            background: #0052a3;
-        }
-        
-        .error {
-            color: #dc2626;
-            margin-top: 8px;
-            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
-        .output-container {
-            margin-top: 20px;
-            background: #f3f4f6;
+
+        .history-item, .batch-item {
             padding: 12px;
-            border-radius: 4px;
-            position: relative;
-        }
-        
-        .output-text {
-            font-family: monospace;
-            word-break: break-all;
-            padding-right: 60px;
-        }
-        
-        .copy-button {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            padding: 4px 8px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 8px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        #encoding-type {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
+        .history-item:hover, .batch-item:hover {
+            background: var(--border);
+        }
+
+        .history-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .history-preview {
+            font-family: monospace;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .batch-input {
+            margin-bottom: 12px;
+        }
+
+        .batch-results {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+            color: var(--accent);
+        }
+
+        .keyboard-shortcuts {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .shortcut-key {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="tabs">
-            <button class="tab-button active" data-tab="decode">Decode</button>
-            <button class="tab-button" data-tab="encode">Encode</button>
-        </div>
-        
-        <div id="decode-tab" class="tab-content active">
-            <div class="input-group">
-                <label>Enter encoded text:</label>
-                <input type="text" id="decode-input" placeholder="Enter your encoded text here">
+    <div class="container">
+        <header class="header">
+            <h1>
+                <i class="fas fa-code"></i>
+                Enhanced Encoder/Decoder
+            </h1>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+                <span id="theme-text">Dark Mode</span>
+            </button>
+        </header>
+
+        <div class="main-content">
+            <div class="tool-section">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="decode">
+                        <i class="fas fa-unlock"></i> Decode
+                    </button>
+                    <button class="tab-button" data-tab="encode">
+                        <i class="fas fa-lock"></i> Encode
+                    </button>
+                    <button class="tab-button" data-tab="batch">
+                        <i class="fas fa-layer-group"></i> Batch
+                    </button>
+                </div>
+
+                <!-- Decode Tab -->
+                <div id="decode-tab" class="tab-content active">
+                    <div class="drop-zone" ondrop="handleFileDrop(event)" ondragover="event.preventDefault()" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
+                        <i class="fas fa-file-upload fa-2x" style="margin-bottom: 10px;"></i>
+                        <p>Drop a text file here or click to select</p>
+                        <input type="file" id="file-input" accept=".txt,.json,.xml,.csv" style="display: none;" onchange="handleFileSelect(event)">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <label>Enter encoded text:</label>
+                            <span class="char-count" id="decode-char-count">0 characters</span>
+                        </div>
+                        <textarea id="decode-input" class="textarea-large" placeholder="Enter your encoded text here..." oninput="handleDecodeInput()"></textarea>
+                    </div>
+
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="auto-decode" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <label for="auto-decode">Auto-detect and decode</label>
+                        <i class="fas fa-info-circle tooltip" data-tooltip="Automatically detect encoding type and decode in real-time"></i>
+                    </div>
+
+                    <button class="button" onclick="detectAndDecode()" id="decode-btn">
+                        <i class="fas fa-search"></i>
+                        Detect & Decode
+                    </button>
+
+                    <div id="decode-error" class="error hidden"></div>
+                    <div id="decode-success" class="success hidden"></div>
+
+                    <div id="decode-output" class="output-container">
+                        <div class="output-header">
+                            <div class="output-info">
+                                <span id="encoding-type"></span>
+                                <span id="decode-size-info"></span>
+                            </div>
+                            <button class="copy-button" onclick="copyText('decode-result')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="output-text" id="decode-result"></div>
+                    </div>
+                </div>
+
+                <!-- Encode Tab -->
+                <div id="encode-tab" class="tab-content">
+                    <div class="input-group">
+                        <div class="input-label">
+                            <label>Enter text to encode:</label>
+                            <span class="char-count" id="encode-char-count">0 characters</span>
+                        </div>
+                        <textarea id="encode-input" class="textarea-large" placeholder="Enter your text here..." oninput="handleEncodeInput()"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Select encoding type:</label>
+                        <select id="encoding-select">
+                            <option value="base64">Base64</option>
+                            <option value="base32">Base32</option>
+                            <option value="url">URL Encoding</option>
+                            <option value="html">HTML Entities</option>
+                            <option value="hex">Hexadecimal</option>
+                            <option value="binary">Binary</option>
+                            <option value="morse">Morse Code</option>
+                            <option value="rot13">ROT13</option>
+                            <option value="caesar">Caesar Cipher</option>
+                            <option value="ascii">ASCII Codes</option>
+                            <option value="jwt">JWT (encode payload)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="caesar-shift-group" style="display: none;">
+                        <label>Caesar Cipher Shift:</label>
+                        <input type="number" id="caesar-shift" value="3" min="1" max="25">
+                    </div>
+
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="real-time-encode">
+                            <span class="slider"></span>
+                        </label>
+                        <label for="real-time-encode">Real-time encoding</label>
+                    </div>
+
+                    <button class="button" onclick="encode()" id="encode-btn">
+                        <i class="fas fa-lock"></i>
+                        Encode
+                    </button>
+
+                    <div id="encode-error" class="error hidden"></div>
+                    <div id="encode-success" class="success hidden"></div>
+
+                    <div id="encode-output" class="output-container">
+                        <div class="output-header">
+                            <div class="output-info">
+                                <span id="encode-type-info"></span>
+                                <span id="encode-size-info"></span>
+                            </div>
+                            <button class="copy-button" onclick="copyText('encode-result')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="output-text" id="encode-result"></div>
+                    </div>
+                </div>
+
+                <!-- Batch Tab -->
+                <div id="batch-tab" class="tab-content">
+                    <div class="input-group">
+                        <label>Batch Processing:</label>
+                        <textarea id="batch-input" class="textarea-large" placeholder="Enter multiple lines of text to process..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Operation:</label>
+                        <select id="batch-operation">
+                            <option value="encode">Encode</option>
+                            <option value="decode">Auto-Decode</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" id="batch-encoding-group">
+                        <label>Encoding Type:</label>
+                        <select id="batch-encoding">
+                            <option value="base64">Base64</option>
+                            <option value="base32">Base32</option>
+                            <option value="url">URL Encoding</option>
+                            <option value="html">HTML Entities</option>
+                            <option value="hex">Hexadecimal</option>
+                            <option value="binary">Binary</option>
+                            <option value="morse">Morse Code</option>
+                            <option value="rot13">ROT13</option>
+                            <option value="ascii">ASCII Codes</option>
+                        </select>
+                    </div>
+
+                    <button class="button" onclick="processBatch()">
+                        <i class="fas fa-layer-group"></i>
+                        Process Batch
+                    </button>
+
+                    <div class="button-group">
+                        <button class="button button-secondary" onclick="exportResults()">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="button button-secondary" onclick="clearBatchResults()">
+                            <i class="fas fa-trash"></i> Clear Results
+                        </button>
+                    </div>
+
+                    <div id="batch-results" class="batch-results"></div>
+                </div>
+
+                <div class="keyboard-shortcuts">
+                    <strong>Keyboard Shortcuts:</strong>
+                    <div class="shortcut">
+                        <span>Encode</span>
+                        <span class="shortcut-key">Ctrl + E</span>
+                    </div>
+                    <div class="shortcut">
+                        <span>Decode</span>
+                        <span class="shortcut-key">Ctrl + D</span>
+                    </div>
+                    <div class="shortcut">
+                        <span>Copy Result</span>
+                        <span class="shortcut-key">Ctrl + C</span>
+                    </div>
+                    <div class="shortcut">
+                        <span>Clear Input</span>
+                        <span class="shortcut-key">Ctrl + L</span>
+                    </div>
+                </div>
             </div>
-            <button class="button" onclick="detectAndDecode()">Decode</button>
-            <div id="decode-error" class="error"></div>
-            <div id="decode-output" class="output-container" style="display: none;">
-                <div id="encoding-type"></div>
-                <div class="output-text" id="decode-result"></div>
-                <button class="copy-button" onclick="copyText('decode-result')">Copy</button>
-            </div>
-        </div>
-        
-        <div id="encode-tab" class="tab-content">
-            <div class="input-group">
-                <label>Enter text to encode:</label>
-                <input type="text" id="encode-input" placeholder="Enter your text here">
-            </div>
-            <div class="input-group">
-                <label>Select encoding type:</label>
-                <select id="encoding-select">
-                    <option value="base64">Base64</option>
-                    <option value="url">URL Encoding</option>
-                    <option value="html">HTML Entities</option>
-                    <option value="hex">Hexadecimal</option>
-                    <option value="binary">Binary</option>
-                    <option value="morse">Morse Code</option>
-                    <option value="rot13">ROT13</option>
-                    <option value="ascii">ASCII</option>
-                </select>
-            </div>
-            <button class="button" onclick="encode()">Encode</button>
-            <div id="encode-error" class="error"></div>
-            <div id="encode-output" class="output-container" style="display: none;">
-                <div class="output-text" id="encode-result"></div>
-                <button class="copy-button" onclick="copyText('encode-result')">Copy</button>
+
+            <div class="sidebar">
+                <!-- History Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-history"></i>
+                        Recent History
+                    </div>
+                    <div id="history-list">
+                        <p style="color: var(--text-secondary); font-size: 14px;">No recent activity</p>
+                    </div>
+                    <button class="button button-secondary" onclick="clearHistory()" style="margin-top: 12px;">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                </div>
+
+                <!-- Quick Tools -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-tools"></i>
+                        Quick Tools
+                    </div>
+                    <div class="button-group" style="grid-template-columns: 1fr;">
+                        <button class="button button-secondary" onclick="generateRandomString()">
+                            <i class="fas fa-random"></i> Random String
+                        </button>
+                        <button class="button button-secondary" onclick="analyzeText()">
+                            <i class="fas fa-chart-bar"></i> Text Analysis
+                        </button>
+                        <button class="button button-secondary" onclick="formatJson()">
+                            <i class="fas fa-code"></i> Format JSON
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-chart-line"></i>
+                        Statistics
+                    </div>
+                    <div id="stats-content">
+                        <div style="font-size: 14px; color: var(--text-secondary);">
+                            <div>Total Operations: <span id="total-ops">0</span></div>
+                            <div>Encodings: <span id="total-encodings">0</span></div>
+                            <div>Decodings: <span id="total-decodings">0</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Initialize application state
+        let appState = {
+            history: JSON.parse(localStorage.getItem('encoder-history') || '[]'),
+            stats: JSON.parse(localStorage.getItem('encoder-stats') || '{"totalOps": 0, "encodings": 0, "decodings": 0}'),
+            theme: localStorage.getItem('encoder-theme') || 'light'
+        };
+
+        // Encoding/Decoding maps and functions
         const morseToChar = {
             '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F',
             '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
@@ -194,31 +810,250 @@
             Object.entries(morseToChar).map(([morse, char]) => [char, morse])
         );
 
-        // Tab switching
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                button.classList.add('active');
-                document.getElementById(`${button.dataset.tab}-tab`).classList.add('active');
-            });
+        const base32Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            updateStats();
+            renderHistory();
+            setupEventListeners();
+            setupKeyboardShortcuts();
         });
 
-        // Fixed copy function
+        function initializeTheme() {
+            document.documentElement.setAttribute('data-theme', appState.theme);
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (appState.theme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Light Mode';
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark Mode';
+            }
+        }
+
+        function toggleTheme() {
+            appState.theme = appState.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('encoder-theme', appState.theme);
+            initializeTheme();
+        }
+
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    
+                    button.classList.add('active');
+                    document.getElementById(`${button.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+
+            // Real-time encoding toggle
+            document.getElementById('real-time-encode').addEventListener('change', function() {
+                if (this.checked) {
+                    handleEncodeInput();
+                }
+            });
+
+            // Auto-decode toggle
+            document.getElementById('auto-decode').addEventListener('change', function() {
+                if (this.checked) {
+                    handleDecodeInput();
+                }
+            });
+
+            // Encoding type change for Caesar cipher
+            document.getElementById('encoding-select').addEventListener('change', function() {
+                const caesarGroup = document.getElementById('caesar-shift-group');
+                caesarGroup.style.display = this.value === 'caesar' ? 'block' : 'none';
+            });
+
+            // Batch operation change
+            document.getElementById('batch-operation').addEventListener('change', function() {
+                const encodingGroup = document.getElementById('batch-encoding-group');
+                encodingGroup.style.display = this.value === 'encode' ? 'block' : 'none';
+            });
+
+            // File drop zone click
+            document.querySelector('.drop-zone').addEventListener('click', function() {
+                document.getElementById('file-input').click();
+            });
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(event) {
+                if (event.ctrlKey || event.metaKey) {
+                    switch (event.key.toLowerCase()) {
+                        case 'e':
+                            event.preventDefault();
+                            encode();
+                            break;
+                        case 'd':
+                            event.preventDefault();
+                            detectAndDecode();
+                            break;
+                        case 'l':
+                            event.preventDefault();
+                            clearCurrentInput();
+                            break;
+                    }
+                }
+            });
+        }
+
+        function clearCurrentInput() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab.id === 'encode-tab') {
+                document.getElementById('encode-input').value = '';
+                handleEncodeInput();
+            } else if (activeTab.id === 'decode-tab') {
+                document.getElementById('decode-input').value = '';
+                handleDecodeInput();
+            } else if (activeTab.id === 'batch-tab') {
+                document.getElementById('batch-input').value = '';
+            }
+        }
+
+        function handleDecodeInput() {
+            const input = document.getElementById('decode-input').value;
+            const charCount = document.getElementById('decode-char-count');
+            charCount.textContent = `${input.length} characters`;
+
+            if (document.getElementById('auto-decode').checked && input.trim()) {
+                detectAndDecode(true);
+            } else {
+                hideOutput('decode');
+            }
+        }
+
+        function handleEncodeInput() {
+            const input = document.getElementById('encode-input').value;
+            const charCount = document.getElementById('encode-char-count');
+            charCount.textContent = `${input.length} characters`;
+
+            if (document.getElementById('real-time-encode').checked && input.trim()) {
+                encode(true);
+            } else {
+                hideOutput('encode');
+            }
+        }
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            event.target.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function handleDragEnter(event) {
+            event.preventDefault();
+            event.target.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            if (!event.target.contains(event.relatedTarget)) {
+                event.target.classList.remove('dragover');
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            if (file.size > 1024 * 1024) { // 1MB limit
+                showMessage('decode', 'error', 'File too large. Maximum size is 1MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('decode-input').value = e.target.result;
+                handleDecodeInput();
+                showMessage('decode', 'success', `File "${file.name}" loaded successfully.`);
+            };
+            reader.onerror = function() {
+                showMessage('decode', 'error', 'Error reading file.');
+            };
+            reader.readAsText(file);
+        }
+
+        function showMessage(tab, type, message) {
+            hideAllMessages(tab);
+            const messageElement = document.getElementById(`${tab}-${type}`);
+            messageElement.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+            messageElement.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageElement.classList.add('hidden');
+            }, 5000);
+        }
+
+        function hideAllMessages(tab) {
+            ['error', 'success', 'warning'].forEach(type => {
+                const element = document.getElementById(`${tab}-${type}`);
+                if (element) {
+                    element.classList.add('hidden');
+                }
+            });
+        }
+
+        function showOutput(tab, result, info = '') {
+            const outputContainer = document.getElementById(`${tab}-output`);
+            const resultElement = document.getElementById(`${tab}-result`);
+            const infoElement = document.getElementById(`${tab === 'decode' ? 'encoding-type' : 'encode-type-info'}`);
+            const sizeElement = document.getElementById(`${tab}-size-info`);
+            
+            resultElement.textContent = result;
+            if (info) infoElement.textContent = info;
+            sizeElement.textContent = ` | ${result.length} characters`;
+            outputContainer.style.display = 'block';
+        }
+
+        function hideOutput(tab) {
+            const outputContainer = document.getElementById(`${tab}-output`);
+            outputContainer.style.display = 'none';
+        }
+
         function copyText(elementId) {
             const textToCopy = document.getElementById(elementId).textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showCopyFeedback(event.target);
+                }).catch(err => {
+                    fallbackCopyText(textToCopy, event.target);
+                });
+            } else {
+                fallbackCopyText(textToCopy, event.target);
+            }
+        }
+
+        function fallbackCopyText(text, button) {
             const textArea = document.createElement('textarea');
-            textArea.value = textToCopy;
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
             document.body.appendChild(textArea);
+            textArea.focus();
             textArea.select();
             
             try {
                 document.execCommand('copy');
-                const button = event.target;
-                const originalText = button.textContent;
-                button.textContent = 'Copied!';
-                setTimeout(() => button.textContent = originalText, 2000);
+                showCopyFeedback(button);
             } catch (err) {
                 console.error('Failed to copy text:', err);
             }
@@ -226,49 +1061,129 @@
             document.body.removeChild(textArea);
         }
 
-        function showError(tabId, message) {
-            const errorDiv = document.getElementById(`${tabId}-error`);
-            errorDiv.textContent = message;
-            setTimeout(() => errorDiv.textContent = '', 3000);
+        function showCopyFeedback(button) {
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            button.style.background = 'var(--success)';
+            
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.style.background = 'var(--accent)';
+            }, 2000);
         }
 
-        function showOutput(tabId, result, encodingType = '') {
-            const outputContainer = document.getElementById(`${tabId}-output`);
-            const resultElement = document.getElementById(`${tabId}-result`);
+        // Base32 encoding/decoding functions
+        function encodeBase32(input) {
+            let output = '';
+            let bits = 0;
+            let value = 0;
             
-            resultElement.textContent = result;
-            outputContainer.style.display = 'block';
-            
-            if (encodingType && tabId === 'decode') {
-                document.getElementById('encoding-type').textContent = `Detected Encoding: ${encodingType}`;
+            for (let i = 0; i < input.length; i++) {
+                value = (value << 8) | input.charCodeAt(i);
+                bits += 8;
+                
+                while (bits >= 5) {
+                    output += base32Alphabet[(value >>> (bits - 5)) & 31];
+                    bits -= 5;
+                }
             }
+            
+            if (bits > 0) {
+                output += base32Alphabet[(value << (5 - bits)) & 31];
+            }
+            
+            while (output.length % 8 !== 0) {
+                output += '=';
+            }
+            
+            return output;
         }
 
-        function encode() {
+        function decodeBase32(input) {
+            input = input.replace(/=+$/, '');
+            let output = '';
+            let bits = 0;
+            let value = 0;
+            
+            for (let i = 0; i < input.length; i++) {
+                const index = base32Alphabet.indexOf(input[i].toUpperCase());
+                if (index === -1) throw new Error('Invalid base32 character');
+                
+                value = (value << 5) | index;
+                bits += 5;
+                
+                if (bits >= 8) {
+                    output += String.fromCharCode((value >>> (bits - 8)) & 255);
+                    bits -= 8;
+                }
+            }
+            
+            return output;
+        }
+
+        // Caesar cipher functions
+        function caesarEncode(text, shift) {
+            return text.replace(/[a-zA-Z]/g, char => {
+                const base = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode((char.charCodeAt(0) - base + shift) % 26 + base);
+            });
+        }
+
+        function caesarDecode(text, shift) {
+            return caesarEncode(text, 26 - shift);
+        }
+
+        // JWT functions
+        function encodeJWT(payload) {
+            const header = { alg: "HS256", typ: "JWT" };
+            const encodedHeader = btoa(JSON.stringify(header)).replace(/[+/=]/g, m => ({'+':'-','/':'_','=':''}[m]));
+            const encodedPayload = btoa(JSON.stringify(JSON.parse(payload))).replace(/[+/=]/g, m => ({'+':'-','/':'_','=':''}[m]));
+            return `${encodedHeader}.${encodedPayload}.signature`;
+        }
+
+        function decodeJWT(token) {
+            const parts = token.split('.');
+            if (parts.length !== 3) throw new Error('Invalid JWT format');
+            
+            const payload = parts[1].replace(/[-_]/g, m => ({'-':'+','_':'/'}[m]));
+            const padding = '='.repeat((4 - payload.length % 4) % 4);
+            return JSON.stringify(JSON.parse(atob(payload + padding)), null, 2);
+        }
+
+        function encode(isRealTime = false) {
             const input = document.getElementById('encode-input').value;
             const encoding = document.getElementById('encoding-select').value;
             
             if (!input.trim()) {
-                showError('encode', 'Please enter some text to encode');
+                if (!isRealTime) {
+                    showMessage('encode', 'error', 'Please enter some text to encode');
+                }
                 return;
+            }
+
+            const button = document.getElementById('encode-btn');
+            if (!isRealTime) {
+                button.innerHTML = '<div class="loading"></div> Encoding...';
+                button.disabled = true;
             }
 
             try {
                 let result;
+                let typeInfo = encoding.toUpperCase();
+
                 switch (encoding) {
                     case 'base64':
                         result = btoa(input);
+                        break;
+                    case 'base32':
+                        result = encodeBase32(input);
                         break;
                     case 'url':
                         result = encodeURIComponent(input);
                         break;
                     case 'html':
                         result = input.replace(/[<>&"']/g, match => ({
-                            '<': '&lt;',
-                            '>': '&gt;',
-                            '&': '&amp;',
-                            '"': '&quot;',
-                            "'": '&#39;'
+                            '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;'
                         })[match]);
                         break;
                     case 'hex':
@@ -292,45 +1207,71 @@
                             return String.fromCharCode((char.charCodeAt(0) - base + 13) % 26 + base);
                         });
                         break;
+                    case 'caesar':
+                        const shift = parseInt(document.getElementById('caesar-shift').value);
+                        result = caesarEncode(input, shift);
+                        typeInfo = `Caesar Cipher (shift ${shift})`;
+                        break;
                     case 'ascii':
                         result = Array.from(input)
                             .map(char => char.charCodeAt(0))
                             .join(' ');
                         break;
+                    case 'jwt':
+                        result = encodeJWT(input);
+                        break;
                 }
-                showOutput('encode', result);
+
+                showOutput('encode', result, typeInfo);
+                
+                if (!isRealTime) {
+                    addToHistory('encode', encoding, input, result);
+                    updateStats('encodings');
+                    showMessage('encode', 'success', 'Text encoded successfully!');
+                }
+
             } catch (error) {
-                showError('encode', 'Error encoding text');
+                console.error('Encoding error:', error);
+                if (!isRealTime) {
+                    showMessage('encode', 'error', `Error encoding text: ${error.message}`);
+                }
+            } finally {
+                if (!isRealTime) {
+                    button.innerHTML = '<i class="fas fa-lock"></i> Encode';
+                    button.disabled = false;
+                }
             }
         }
 
-        function decodeMorse(morseText) {
-            return morseText
-                .trim()
-                .split('/')
-                .map(word => 
-                    word.trim()
-                        .split(' ')
-                        .map(code => morseToChar[code] || '')
-                        .join('')
-                )
-                .join(' ')
-                .trim();
-        }
-
-        function detectAndDecode() {
+        function detectAndDecode(isAuto = false) {
             const input = document.getElementById('decode-input').value;
             
             if (!input.trim()) {
-                showError('decode', 'Please enter some text to decode');
+                if (!isAuto) {
+                    showMessage('decode', 'error', 'Please enter some text to decode');
+                }
                 return;
+            }
+
+            const button = document.getElementById('decode-btn');
+            if (!isAuto) {
+                button.innerHTML = '<div class="loading"></div> Detecting...';
+                button.disabled = true;
             }
 
             try {
                 let result, encodingType;
 
+                // JWT detection
+                if (!result && input.includes('.') && input.split('.').length === 3) {
+                    try {
+                        result = decodeJWT(input);
+                        encodingType = 'JWT (JSON Web Token)';
+                    } catch (e) {}
+                }
+
                 // Morse code detection
-                if (/^[.-\s/]+$/.test(input)) {
+                if (!result && /^[.-\s/]+$/.test(input)) {
                     result = decodeMorse(input);
                     if (result && result !== input) {
                         encodingType = 'Morse Code';
@@ -338,10 +1279,22 @@
                 }
 
                 // Base64 detection
-                if (!result && /^[A-Za-z0-9+/]*={0,2}$/.test(input)) {
+                if (!result && /^[A-Za-z0-9+/]*={0,2}$/.test(input) && input.length % 4 === 0) {
                     try {
                         result = atob(input);
-                        encodingType = 'Base64';
+                        if (result !== input) {
+                            encodingType = 'Base64';
+                        }
+                    } catch (e) {}
+                }
+
+                // Base32 detection
+                if (!result && /^[A-Z2-7=]*$/i.test(input)) {
+                    try {
+                        result = decodeBase32(input);
+                        if (result !== input) {
+                            encodingType = 'Base32';
+                        }
                     } catch (e) {}
                 }
 
@@ -360,62 +1313,330 @@
                 if (!result && input.includes('&') && input.includes(';')) {
                     const div = document.createElement('div');
                     div.innerHTML = input;
-                    const decoded = div.textContent;
+                    const decoded = div.textContent || div.innerText || "";
                     if (decoded !== input) {
                         result = decoded;
                         encodingType = 'HTML Entities';
                     }
                 }
 
-                // Hex detection
-                if (!result && /^[0-9A-Fa-f\s]+$/.test(input)) {
+                // Hexadecimal detection
+                if (!result && /^([0-9a-fA-F]{2}\s*)+$/.test(input.trim())) {
                     try {
-                        result = input.replace(/\s+/g, '')
-                            .match(/.{1,2}/g)
-                            ?.map(byte => String.fromCharCode(parseInt(byte, 16)))
+                        result = input.trim().split(/\s+/)
+                            .map(hex => String.fromCharCode(parseInt(hex, 16)))
                             .join('');
-                        if (result) encodingType = 'Hexadecimal';
+                        encodingType = 'Hexadecimal';
                     } catch (e) {}
                 }
 
                 // Binary detection
-                if (!result && /^[01\s]+$/.test(input)) {
+                if (!result && /^([01]{8}\s*)+$/.test(input.trim())) {
                     try {
-                        result = input.split(' ')
+                        result = input.trim().split(/\s+/)
                             .map(bin => String.fromCharCode(parseInt(bin, 2)))
                             .join('');
                         encodingType = 'Binary';
                     } catch (e) {}
                 }
 
-                // ASCII detection
-                if (!result && /^\d+(\s+\d+)*$/.test(input)) {
+                // ASCII codes detection
+                if (!result && /^(\d{2,3}\s*)+$/.test(input.trim())) {
                     try {
-                        result = input.split(' ')
-                            .map(num => String.fromCharCode(parseInt(num, 10)))
+                        result = input.trim().split(/\s+/)
+                            .map(code => String.fromCharCode(parseInt(code)))
                             .join('');
-                        encodingType = 'ASCII';
+                        encodingType = 'ASCII Codes';
                     } catch (e) {}
                 }
 
-                // ROT13 detection
+                // ROT13 detection (try decoding)
                 if (!result) {
-                    result = input.replace(/[a-zA-Z]/g, char => {
+                    const rot13Result = input.replace(/[a-zA-Z]/g, char => {
                         const base = char <= 'Z' ? 65 : 97;
                         return String.fromCharCode((char.charCodeAt(0) - base + 13) % 26 + base);
                     });
-                    if (result !== input) {
+                    if (rot13Result !== input && /[a-zA-Z]/.test(input)) {
+                        result = rot13Result;
                         encodingType = 'ROT13';
                     }
                 }
 
-                if (result) {
-                    showOutput('decode', result, encodingType);
+                if (result && result !== input) {
+                    showOutput('decode', result, `Detected: ${encodingType}`);
+                    
+                    if (!isAuto) {
+                        addToHistory('decode', encodingType, input, result);
+                        updateStats('decodings');
+                        showMessage('decode', 'success', `Successfully decoded as ${encodingType}!`);
+                    }
                 } else {
-                    showError('decode', 'Unable to detect encoding type');
+                    if (!isAuto) {
+                        showMessage('decode', 'warning', 'No encoding detected. The text might already be decoded or use an unsupported encoding.');
+                    }
                 }
+
             } catch (error) {
-                showError('decode', 'Error decoding text');
+                console.error('Decoding error:', error);
+                if (!isAuto) {
+                    showMessage('decode', 'error', `Error decoding text: ${error.message}`);
+                }
+            } finally {
+                if (!isAuto) {
+                    button.innerHTML = '<i class="fas fa-search"></i> Detect & Decode';
+                    button.disabled = false;
+                }
+            }
+        }
+
+        function decodeMorse(morseText) {
+            return morseText
+                .trim()
+                .split('/')
+                .map(word => 
+                    word.trim()
+                        .split(' ')
+                        .map(code => morseToChar[code] || '')
+                        .join('')
+                )
+                .join(' ')
+                .trim();
+        }
+
+        function processBatch() {
+            const input = document.getElementById('batch-input').value;
+            const operation = document.getElementById('batch-operation').value;
+            const encoding = document.getElementById('batch-encoding').value;
+            
+            if (!input.trim()) {
+                showMessage('batch', 'error', 'Please enter text to process');
+                return;
+            }
+
+            const lines = input.split('\n').filter(line => line.trim());
+            const resultsContainer = document.getElementById('batch-results');
+            resultsContainer.innerHTML = '';
+
+            lines.forEach((line, index) => {
+                const item = document.createElement('div');
+                item.className = 'batch-item';
+                
+                try {
+                    let result;
+                    
+                    if (operation === 'encode') {
+                        // Use the encode logic here
+                        document.getElementById('encode-input').value = line;
+                        document.getElementById('encoding-select').value = encoding;
+                        encode(true);
+                        result = document.getElementById('encode-result').textContent;
+                    } else {
+                        // Auto-decode
+                        document.getElementById('decode-input').value = line;
+                        detectAndDecode(true);
+                        result = document.getElementById('decode-result').textContent || 'No encoding detected';
+                    }
+                    
+                    item.innerHTML = `
+                        <div style="font-weight: 600; margin-bottom: 4px;">Line ${index + 1}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Input: ${line.substring(0, 50)}${line.length > 50 ? '...' : ''}</div>
+                        <div style="font-family: monospace; font-size: 12px; background: var(--bg-primary); padding: 8px; border-radius: 4px; word-break: break-all;">${result}</div>
+                    `;
+                    
+                } catch (error) {
+                    item.innerHTML = `
+                        <div style="font-weight: 600; margin-bottom: 4px;">Line ${index + 1} - Error</div>
+                        <div style="color: var(--error); font-size: 12px;">${error.message}</div>
+                    `;
+                }
+                
+                resultsContainer.appendChild(item);
+            });
+
+            updateStats('totalOps');
+        }
+
+        function exportResults() {
+            const results = document.getElementById('batch-results');
+            if (!results.children.length) {
+                showMessage('batch', 'warning', 'No results to export');
+                return;
+            }
+
+            let exportText = 'Batch Processing Results\n';
+            exportText += '='.repeat(30) + '\n\n';
+            
+            Array.from(results.children).forEach(item => {
+                const lines = item.textContent.split('\n').filter(line => line.trim());
+                exportText += lines.join('\n') + '\n\n';
+            });
+
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `batch-results-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showMessage('batch', 'success', 'Results exported successfully!');
+        }
+
+        function clearBatchResults() {
+            document.getElementById('batch-results').innerHTML = '';
+            document.getElementById('batch-input').value = '';
+        }
+
+        function addToHistory(operation, type, input, output) {
+            const historyItem = {
+                id: Date.now(),
+                operation,
+                type,
+                input: input.substring(0, 100),
+                output: output.substring(0, 100),
+                timestamp: new Date().toLocaleString()
+            };
+
+            appState.history.unshift(historyItem);
+            appState.history = appState.history.slice(0, 10); // Keep last 10 items
+            
+            localStorage.setItem('encoder-history', JSON.stringify(appState.history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const historyList = document.getElementById('history-list');
+            
+            if (appState.history.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">No recent activity</p>';
+                return;
+            }
+
+            historyList.innerHTML = appState.history.map(item => `
+                <div class="history-item" onclick="restoreFromHistory('${item.id}')">
+                    <div class="history-meta">
+                        ${item.operation.toUpperCase()} - ${item.type} - ${item.timestamp}
+                    </div>
+                    <div class="history-preview">
+                        ${item.input}${item.input.length > 50 ? '...' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function restoreFromHistory(id) {
+            const item = appState.history.find(h => h.id == id);
+            if (!item) return;
+
+            if (item.operation === 'encode') {
+                document.querySelector('[data-tab="encode"]').click();
+                document.getElementById('encode-input').value = item.input;
+                handleEncodeInput();
+            } else {
+                document.querySelector('[data-tab="decode"]').click();
+                document.getElementById('decode-input').value = item.input;
+                handleDecodeInput();
+            }
+        }
+
+        function clearHistory() {
+            appState.history = [];
+            localStorage.setItem('encoder-history', JSON.stringify(appState.history));
+            renderHistory();
+            showMessage('decode', 'success', 'History cleared successfully!');
+        }
+
+        function updateStats(type = null) {
+            if (type) {
+                appState.stats[type]++;
+                appState.stats.totalOps++;
+                localStorage.setItem('encoder-stats', JSON.stringify(appState.stats));
+            }
+
+            document.getElementById('total-ops').textContent = appState.stats.totalOps;
+            document.getElementById('total-encodings').textContent = appState.stats.encodings;
+            document.getElementById('total-decodings').textContent = appState.stats.decodings;
+        }
+
+        function generateRandomString() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 16; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab.id === 'encode-tab') {
+                document.getElementById('encode-input').value = result;
+                handleEncodeInput();
+            } else {
+                document.getElementById('decode-input').value = result;
+                handleDecodeInput();
+            }
+        }
+
+        function analyzeText() {
+            const activeTab = document.querySelector('.tab-content.active');
+            let text = '';
+            
+            if (activeTab.id === 'encode-tab') {
+                text = document.getElementById('encode-input').value;
+            } else if (activeTab.id === 'decode-tab') {
+                text = document.getElementById('decode-input').value;
+            }
+            
+            if (!text.trim()) {
+                showMessage('decode', 'warning', 'No text to analyze');
+                return;
+            }
+
+            const analysis = {
+                characters: text.length,
+                words: text.split(/\s+/).filter(word => word.length > 0).length,
+                lines: text.split('\n').length,
+                alphanumeric: (text.match(/[a-zA-Z0-9]/g) || []).length,
+                spaces: (text.match(/\s/g) || []).length,
+                uppercase: (text.match(/[A-Z]/g) || []).length,
+                lowercase: (text.match(/[a-z]/g) || []).length,
+                digits: (text.match(/\d/g) || []).length
+            };
+
+            const message = `Analysis: ${analysis.characters} chars, ${analysis.words} words, ${analysis.lines} lines, ${analysis.alphanumeric} alphanumeric`;
+            showMessage('decode', 'success', message);
+        }
+
+        function formatJson() {
+            const activeTab = document.querySelector('.tab-content.active');
+            let text = '';
+            let inputElement = null;
+            
+            if (activeTab.id === 'encode-tab') {
+                text = document.getElementById('encode-input').value;
+                inputElement = document.getElementById('encode-input');
+            } else if (activeTab.id === 'decode-tab') {
+                text = document.getElementById('decode-input').value;
+                inputElement = document.getElementById('decode-input');
+            }
+            
+            if (!text.trim()) {
+                showMessage('decode', 'warning', 'No text to format');
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(text);
+                const formatted = JSON.stringify(parsed, null, 2);
+                inputElement.value = formatted;
+                
+                if (activeTab.id === 'encode-tab') {
+                    handleEncodeInput();
+                } else {
+                    handleDecodeInput();
+                }
+                
+                showMessage('decode', 'success', 'JSON formatted successfully!');
+            } catch (error) {
+                showMessage('decode', 'error', 'Invalid JSON format');
             }
         }
     </script>
