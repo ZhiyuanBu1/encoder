@@ -13,7 +13,17 @@
             <p>Custom quantum-inspired multi-layer encryption system</p>
         </header>
 
-        <div class="main-content">
+        <div id="passcode-screen" class="passcode-screen">
+            <div class="passcode-box">
+                <h2>Access Required</h2>
+                <p>Enter the passcode to use this system:</p>
+                <input type="password" id="passcode-input" placeholder="Enter passcode">
+                <button id="access-btn">Access System</button>
+                <div id="passcode-error" class="error-message"></div>
+            </div>
+        </div>
+
+        <div id="main-content" class="main-content" style="display: none;">
             <div class="input-section">
                 <div class="input-group">
                     <label for="inputText">Enter text to encode/decode:</label>
