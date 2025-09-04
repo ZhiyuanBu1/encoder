@@ -181,6 +181,12 @@ class QuantumLayeredEncoder {
 const encoder = new QuantumLayeredEncoder();
 
 // DOM elements
+const passcodeScreen = document.getElementById('passcode-screen');
+const mainContent = document.getElementById('main-content');
+const passcodeInput = document.getElementById('passcode-input');
+const accessBtn = document.getElementById('access-btn');
+const passcodeError = document.getElementById('passcode-error');
+
 const inputText = document.getElementById('inputText');
 const outputText = document.getElementById('outputText');
 const encryptionKey = document.getElementById('encryptionKey');
@@ -189,6 +195,35 @@ const decodeBtn = document.getElementById('decodeBtn');
 const clearBtn = document.getElementById('clearBtn');
 const copyBtn = document.getElementById('copyBtn');
 const generateKeyBtn = document.getElementById('generateKey');
+
+// Passcode authentication
+const CORRECT_PASSCODE = 'AE&DS';
+
+function checkPasscode() {
+    const enteredPasscode = passcodeInput.value;
+    
+    if (enteredPasscode === CORRECT_PASSCODE) {
+        passcodeScreen.style.display = 'none';
+        mainContent.style.display = 'grid';
+        passcodeError.textContent = '';
+    } else {
+        passcodeError.textContent = 'Incorrect passcode. Access denied.';
+        passcodeInput.value = '';
+        passcodeInput.style.borderColor = '#e74c3c';
+        setTimeout(() => {
+            passcodeInput.style.borderColor = '#e0e6ed';
+        }, 2000);
+    }
+}
+
+// Passcode event listeners
+accessBtn.addEventListener('click', checkPasscode);
+
+passcodeInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        checkPasscode();
+    }
+});
 
 // Event listeners
 encodeBtn.addEventListener('click', () => {
